@@ -114,7 +114,7 @@ const questions = [
 ];
 
 // Set this to the HTTPS URL of your dessert endpoint after hosting it.
-const dessertEndpoint = 'https://studio-bake-off-ai.bhoomikamanot12.chatgpt.site/dessert';
+const dessertEndpoint = 'https://studio-bake-off-ai.bhoomikamanot12.workers.dev/dessert';
 let previewApiKey = apiKey.trim();
 const picks = [];
 let game;
