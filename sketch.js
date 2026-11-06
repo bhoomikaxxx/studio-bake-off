@@ -114,7 +114,7 @@ const questions = [
 ];
 
 // Set this to the HTTPS URL of your dessert endpoint after hosting it.
-const dessertEndpoint = '';
+const dessertEndpoint = 'https://studio-bake-off-ai.bhoomikamanot12.chatgpt.site/dessert';
 let previewApiKey = apiKey.trim();
 const picks = [];
 let game;
@@ -456,7 +456,7 @@ function showWelcome(moveFocus = false) {
     previewApiKey = '';
     showWelcome(true);
   });
-  content.append(settings);
+  if (!dessertEndpoint) content.append(settings);
   addButton(content, 'Start baking →', () => {
     if (!musicMuted) startBakeryMusic();
     previewApiKey = keyField.value.trim() || previewApiKey;
@@ -1318,7 +1318,7 @@ async function showResults() {
     sketch.src = sketchImage;
     content.append(sketch);
     addText(content, 'h3', 'AI’s best guess');
-    cakeGuess = addText(content, 'p', previewApiKey ? 'Taking a look at your sketch…' : 'A cake guess needs the OpenAI connection.');
+    cakeGuess = addText(content, 'p', previewApiKey || dessertEndpoint ? 'Taking a look at your sketch…' : 'A cake guess needs the OpenAI connection.');
   }
   addButton(content, 'Play again ↻', () => {
     picks.length = 0;
@@ -1339,8 +1339,11 @@ async function showResults() {
       const response = await fetch(dessertEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ picks: answers.map((answer, index) => questions[index].answers.indexOf(answer)).filter((_, index) => index !== 3) }),
-        signal: AbortSignal.timeout(30000)
+        body: JSON.stringify({
+          picks: answers.map((answer, index) => questions[index].answers.indexOf(answer)).filter((_, index) => index !== 3),
+          sketchImage
+        }),
+        signal: AbortSignal.timeout(45000)
       });
       if (!response.ok) throw new Error('Dessert request failed');
       generated = await response.json();
@@ -1355,11 +1358,12 @@ async function showResults() {
     }
   }
   if (!card.isConnected) return;
-  if (cakeGuess && previewApiKey) {
+  if (cakeGuess && (previewApiKey || dessertEndpoint)) {
     if (typeof result.cakeGuess === 'string' && result.cakeGuess.trim()) {
       cakeGuess.textContent = result.cakeGuess.trim();
     } else {
-      loadCakeGuess(cakeGuess, sketchImage);
+      if (previewApiKey) loadCakeGuess(cakeGuess, sketchImage);
+      else cakeGuess.textContent = 'The cake guess didn’t come through this time.';
     }
   }
   card.replaceChildren();
